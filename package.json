@@ -1,0 +1,29 @@
+{
+  "name": "greenhouse-gas-inventory-apis",
+  "version": "1.0.0",
+  "description": "> This is an express app with Mongodb as database.\r dataset taken from https://www.kaggle.com/unitednations/international-greenhouse-gas-emissions",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/virajsathvara/greenhouse-gas-inventory-apis.git"
+  },
+  "author": "viraj sathvara",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/virajsathvara/greenhouse-gas-inventory-apis/issues"
+  },
+  "homepage": "https://github.com/virajsathvara/greenhouse-gas-inventory-apis#readme",
+  "dependencies": {
+    "ajv": "^8.11.0",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "lodash": "^4.17.21",
+    "mongoose": "^6.2.10",
+    "nodemon": "^2.0.15",
+    "validatorjs": "^3.22.1"
+  }
+}
