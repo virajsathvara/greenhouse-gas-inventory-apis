@@ -58,6 +58,7 @@ const filterUsingCategory = (data, category) => {
 }
 
 const getUrl = (req) => {
+  console.log(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
   return `${req.protocol}://${req.get('host')}${req.originalUrl}`
 }
 
