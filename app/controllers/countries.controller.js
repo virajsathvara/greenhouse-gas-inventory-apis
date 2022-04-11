@@ -81,8 +81,12 @@ module.exports.getAll = async (req, res) => {
         if (category) {
           data = filterUsingCategory(data, category)
         }
-        cache.put(getUrl(req), data)
-        res.send(data)
+        if (data.length < 1) {
+          res.status(404).send('not found')
+        } else {
+          cache.put(getUrl(req), data)
+          res.send(data)
+        }
       }
     } catch (error) {
       res.status(500).json(error)
@@ -132,8 +136,12 @@ module.exports.getByCountry = async (req, res) => {
     } else {
       try {
         const response = await gasInventory.find({ country_or_area: allCountries })
-        cache.put(getUrl(req), response)
-        res.send(response)
+        if (response.length < 1) {
+          res.status(404).send('not found')
+        } else {
+          cache.put(getUrl(req), response)
+          res.send(response)
+        }
       } catch (error) {
         res.status(500).json(error)
       }
