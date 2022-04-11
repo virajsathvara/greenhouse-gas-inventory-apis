@@ -3,6 +3,7 @@ const { gasInventory } = models
 let Validator = require('validatorjs');
 const { ObjectId } = require('mongoose').Types
 const _ = require('lodash')
+const cache = require('memory-cache');
 
 const validator = (data, rules, errorMessages) => {
   const validation = new Validator(data, rules, errorMessages)
@@ -56,22 +57,32 @@ const filterUsingCategory = (data, category) => {
   })
 }
 
+const getUrl = (req) => {
+  return `${req.protocol}://${req.get('host')}${req.originalUrl}`
+}
+
 module.exports.getAll = async (req, res) => {
   const isQueryValid = validateQuery(req.query)
   if (!isQueryValid.errors) {
     const { startYear, endYear, category } = isQueryValid
     try {
-      let data = await gasInventory.find({
-        year: {
-          $gte: `${startYear}`,
-          $lt: `${endYear}`
-        }
-      }).sort({ year: 'asc' })
+      const cachedReq = cache.get(getUrl(req))
+      if (cachedReq) {
+        res.send(cachedReq)
+      } else {
+        let data = await gasInventory.find({
+          year: {
+            $gte: `${startYear}`,
+            $lt: `${endYear}`
+          }
+        }).sort({ year: 'asc' })
 
-      if (category) {
-        data = filterUsingCategory(data, category)
+        if (category) {
+          data = filterUsingCategory(data, category)
+        }
+        cache.put(getUrl(req), data)
+        res.send(data)
       }
-      res.send(data)
     } catch (error) {
       res.status(500).json(error)
     }
@@ -91,20 +102,43 @@ module.exports.getById = async (req, res) => {
     })
   }
   if (validId) {
-    try {
-      res.send(await gasInventory.find({ _id: id }))
-    } catch (error) {
-      res.status(500).json(error)
+    const cachedReq = cache.get(getUrl(req))
+    if (cachedReq) {
+      res.send(cachedReq)
+    } else {
+      try {
+        const response = await gasInventory.find({ _id: id })
+        cache.put(getUrl(req), response)
+        res.send(response)
+      } catch (error) {
+        res.status(500).json(error)
+      }
     }
   }
 }
 
 module.exports.getByCountry = async (req, res) => {
   const { countries } = req.query
-  let allCountries = countries.split(",")
-  try {
-    res.send(await gasInventory.find({ country_or_area: allCountries }))
-  } catch (error) {
-    res.status(500).json(error)
+  const rules = {
+    countries: 'required|string'
   }
+  const validation = validator({ countries }, rules)
+  if (validation.isValid) {
+    let allCountries = countries.split(",")
+    const cachedReq = cache.get(getUrl(req))
+    if (cachedReq) {
+      res.send(cachedReq)
+    } else {
+      try {
+        const response = await gasInventory.find({ country_or_area: allCountries })
+        cache.put(getUrl(req), response)
+        res.send(response)
+      } catch (error) {
+        res.status(500).json(error)
+      }
+    }
+  } else {
+    res.status(400).json(validation.errors)
+  }
+
 }
