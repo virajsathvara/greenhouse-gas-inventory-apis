@@ -98,3 +98,13 @@ module.exports.getById = async (req, res) => {
     }
   }
 }
+
+module.exports.getByCountry = async (req, res) => {
+  const { countries } = req.query
+  let allCountries = countries.split(",")
+  try {
+    res.send(await gasInventory.find({ country_or_area: allCountries }))
+  } catch (error) {
+    res.status(500).json(error)
+  }
+}
